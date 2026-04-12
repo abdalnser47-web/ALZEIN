@@ -1,0 +1,16 @@
+{
+  "name": "Alzein Ledger",
+  "short_name": "Alzein",
+  "description": "تطبيق متكامل لإدارة الديون الشخصية",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#6C63FF",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2845/2845892.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
