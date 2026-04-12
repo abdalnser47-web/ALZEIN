@@ -13,6 +13,19 @@
 <meta name="theme-color" content="#6C63FF">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2845/2845892.png">
   <style>
+      .user-card {
+    background: linear-gradient(135deg, #6C63FF, #5A52D5);
+    border-radius: 16px;
+    padding: 15px;
+    margin: 15px;
+    color: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.user-id-label { font-size: 0.75rem; opacity: 0.8; }
+.user-id-val { font-size: 1.2rem; font-weight: bold; margin: 5px 0; color: #00D2FF; }
+.sub-status { font-size: 0.8rem; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 20px; }
         :root {
             --primary: #6C63FF;
             --primary-dark: #5A52D5;
@@ -815,6 +828,15 @@
 
     <!-- SETTINGS PAGE -->
     <div class="page" id="page-settings">
+            <div class="user-card">
+        <div class="user-id-label">رقم العميل الشخصي (ID)</div>
+        <div id="user-id-display" class="user-id-val">جاري التوليد...</div>
+        <div id="subscription-status" class="sub-status">فحص الاشتراك...</div>
+        <button onclick="AlzeinSystem.askActivation(localStorage.getItem('alz_id'))" 
+                style="margin-top:10px; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:10px; padding:5px 15px; font-size:0.7rem;">
+            تجديد الاشتراك
+        </button>
+    </div>
         <div class="settings-group">
             <div class="settings-group-title">عام</div>
             <div class="settings-item" onclick="openCurrencySettings()">
@@ -1903,6 +1925,40 @@ document.addEventListener('DOMContentLoaded', () => { checkPinLock(); });
                 .catch(err => console.log('Alzein PWA: فشل التسجيل', err));
         });
     }
+    const AlzeinSystem = {
+    getUserId: function() {
+        let id = localStorage.getItem('alz_id') || 'ALZ-' + Math.random().toString(36).substr(2, 7).toUpperCase();
+        localStorage.setItem('alz_id', id);
+        return id;
+    },
+    updateUI: function() {
+        const id = this.getUserId();
+        document.getElementById('user-id-display').innerText = id;
+        const expiry = localStorage.getItem('alz_exp');
+        const status = document.getElementById('subscription-status');
+        
+        if (expiry && new Date(expiry) > new Date()) {
+            status.innerText = "✅ اشتراك فعال لغاية: " + new Date(expiry).toLocaleDateString('ar-EG');
+            status.style.color = "#00FF7F";
+        } else {
+            status.innerText = "⚠️ الحساب غير نشط - اطلب التفعيل";
+            status.style.color = "#FF453A";
+            setTimeout(() => this.askActivation(id), 2500);
+        }
+    },
+    askActivation: function(id) {
+        const key = prompt("انسخ رقمك وأرسله للمدير للتفعيل:\n" + id + "\n\nأدخل كود التفعيل هنا:");
+        if (key === "ALZEIN-2026") { // هذا هو الكود الذي ستعطيه للعملاء
+            let d = new Date(); d.setDate(d.getDate() + 365);
+            localStorage.setItem('alz_exp', d.toISOString());
+            alert("تم التفعيل بنجاح!");
+            location.reload();
+        } else if (key) {
+            alert("الكود غير صحيح!");
+        }
+    }
+}
+AlzeinSystem.updateUI();
 </script>
 </body>
 </html>
