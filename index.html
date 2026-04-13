@@ -270,7 +270,7 @@ body {
 
 /* ==================== الأدوات المساعدة ==================== */
 .empty-state { text-align:center; padding:30px 16px; animation:fadeIn 0.5s ease; } .empty-state i { font-size:50px; color:var(--text-muted); margin-bottom:12px; opacity:0.5; } .empty-state h3 { font-size:16px; margin-bottom:6px; color:var(--text-secondary); } .empty-state p { font-size:13px; color:var(--text-muted); }
-.date-display { text-align:center; padding:12px; background:var(--bg-card); border-radius:var(--radius-sm); margin-bottom:12px; border:1px solid var(--border); } .date-display .day { font-size:30px; font-weight:900; animation:rgbText 4s linear infinite; } .date-display .month-year { font-size:13px; color:var(--text-secondary); } .date-display .weekday { font-size:12px; color:var(--text-muted); margin-top:4px; }
+.date-display { text-align:center; padding:8px; background:var(--bg-card); border-radius:var(--radius-sm); margin-bottom:12px; border:1px solid var(--border); } .date-display .day { font-size:22px; font-weight:900; animation:rgbText 4s linear infinite; } .date-display .month-year { font-size:10px; color:var(--text-secondary); } .date-display .weekday { font-size:9px; color:var(--text-muted); margin-top:4px; }
 .person-header { background:var(--bg-card); border-radius:var(--radius); padding:20px 16px; text-align:center; margin-bottom:16px; border:1px solid var(--border); position:relative; overflow:hidden; }
 .person-header::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; animation:rgbBorder 4s linear infinite; }
 .person-header .person-avatar { width:64px; height:64px; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; background:linear-gradient(135deg,var(--primary),var(--accent)); color:white; }
@@ -634,11 +634,37 @@ body {
 <div class="modal-overlay" id="currencyModal">
     <div class="modal">
         <div class="modal-handle"></div>
-        <div class="modal-header"><h3>إعدادات العملات</h3><button class="modal-close" onclick="closeModal('currencyModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-header">
+            <h3>إعدادات العملات والصرف</h3>
+            <button class="modal-close" onclick="closeModal('currencyModal')"><i class="fas fa-times"></i></button>
+        </div>
         <div class="modal-body">
-            <div class="form-group"><label class="form-label">العملة الافتراضية</label><select class="form-select" id="defaultCurrency"><option value="USD" selected>🇺🇸 دولار أمريكي (USD)</option><option value="SYP">🇸🇾 ليرة سورية (SYP)</option><option value="TRY">🇹🇷 ليرة تركيه (TRY)</option><option value="EUR">🇪🇺 يورو (EUR)</option><option value="SAR">🇸🇦 ريال سعودي (SAR)</option><option value="EGP">🇪🇬 جنيه مصري (EGP)</option></select></div>
-            <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px"><label class="form-label" style="margin-bottom:8px">أسعار الصرف (يدوي)</label><div id="currencyRatesEditor"></div></div>
-            <button class="btn btn-primary ripple" onclick="saveDefaultCurrency()"><i class="fas fa-save"></i> حفظ</button>
+            <div class="form-group">
+                <label class="form-label">العملة الافتراضية للتطبيق</label>
+                <select class="form-select" id="defaultCurrency">
+                    <option value="USD">🇺🇸 دولار أمريكي (USD)</option>
+                    <option value="SYP">🇸🇾 ليرة سورية (SYP)</option>
+                    <option value="TRY">🇹🇷 ليرة تركية (TRY)</option>
+                    <option value="EUR">🇪🇺 يورو (EUR)</option>
+                    <option value="SAR">🇸🇦 ريال سعودي (SAR)</option>
+                    <option value="EGP">🇪🇬 جنيه مصري (EGP)</option>
+                </select>
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
+                <label class="form-label" style="margin-bottom:12px; display:block; text-align:center; color:var(--primary); font-weight:bold;">
+                    <i class="fas fa-sync-alt"></i> تعديل أسعار الصرف (مقابل 1 USD)
+                </label>
+                
+                <div id="currencyRatesEditor" style="display: flex; flex-direction: column; gap: 10px;">
+                    </div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <button class="btn btn-primary ripple" onclick="saveDefaultCurrency()">
+                    <i class="fas fa-check-double"></i> اعتماد وحفظ التغييرات
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1808,7 +1834,7 @@ const AlzeinSystem = {
                 s.innerText = "⚠️ غير نشط - اطلب التفعيل";
                 s.style.color = "#FF453A";
             }
-            setTimeout(()=>this.askActivation(id), 2000); 
+            //
         } 
     }, 
     
@@ -1817,7 +1843,7 @@ const AlzeinSystem = {
         if(o) o.remove(); 
         document.body.insertAdjacentHTML('beforeend',`
             <div id="customActiveModal" class="activation-overlay">
-                <div class="activation-box">
+                <div class="activation-box"><button onclick="this.closest('.activation-overlay').remove()" style="position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:50%; width:25px; height:25px; cursor:pointer;">&times;</button>
                     <i class="fas fa-shield-halved"></i>
                     <h3>تفعيل تطبيق Alzein</h3>
                     <p>أرسل الرمز التالي للمدير:</p>
@@ -2098,8 +2124,51 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if('Notification' in window && Notification.permission === 'default') 
         Notification.requestPermission(); 
 });
+// ✅ 1. دالة بناء واجهة البطاقات الذكية داخل المودال
+function renderCurrencyRatesEditor() {
+    const container = document.getElementById('currencyRatesEditor');
+    if (!container) return;
 
-function openCurrencyRatesSettings(){ openCurrencySettings(); }
+    // جلب الأسعار من الإعدادات
+    const rates = db.settings.currencyRates || { TRY: 32.5, SYP: 13500, EUR: 0.92, EGP: 49.5 };
+    
+    container.innerHTML = Object.entries(rates).map(([code, rate]) => `
+        <div class="rate-editor-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; margin-bottom: 10px;">
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">1 دولار (USD) ➔ ${code}</div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <button class="rate-btn" onclick="updateRateManual('${code}', -0.1)"><i class="fas fa-minus"></i></button>
+                <div class="rate-value-display" id="display-rate-${code}" style="flex: 1; background: var(--bg-primary); border-radius: 8px; padding: 8px; font-size: 18px; font-weight: bold; color: var(--accent); font-family: monospace;">${rate}</div>
+                <button class="rate-btn" onclick="updateRateManual('${code}', 0.1)"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ✅ 2. دالة التحكم في الأزرار (+ و -)
+function updateRateManual(code, change) {
+    const display = document.getElementById(`display-rate-${code}`);
+    if (!display) return;
+
+    let currentRate = parseFloat(display.textContent);
+    let newRate = currentRate + change;
+    
+    if (newRate < 0) newRate = 0;
+    
+    // تنسيق خاص: السورية رقم صحيح، البقية كسور
+    newRate = (code === 'SYP') ? Math.round(newRate) : parseFloat(newRate.toFixed(2));
+    
+    display.textContent = newRate;
+    
+    if(!db.settings.currencyRates) db.settings.currencyRates = {};
+    db.settings.currencyRates[code] = newRate;
+    
+    db.sync(); // حفظ التغييرات
+    if(navigator.vibrate) navigator.vibrate(10);
+}    
+function openCurrencyRatesSettings() { 
+    renderCurrencyRatesEditor(); // استدعاء بناء البطاقات
+    openCurrencySettings(); 
+}
 </script>
 </body>
 </html>
