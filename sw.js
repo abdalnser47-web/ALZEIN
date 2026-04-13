@@ -1,5 +1,5 @@
 // 📄 sw.js - Alzein PWA Service Worker v1.2.0
-const CACHE_VERSION = 'alzein-v2.0.5';
+const CACHE_VERSION = 'alzein-v2.0.6';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 
