@@ -69,25 +69,9 @@ body {
 .ticker-item i { color: var(--accent); font-size: 10px; }
 
 /* ==================== قفل التطبيق (تم تبسيطه) ==================== */
-#pinLock {
-    position: fixed; top:0; left:0; right:0; bottom:0; background: var(--bg-primary); z-index: 10000;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.5s ease;
-}
-#pinLock .lock-icon { font-size:60px; animation:float 3s ease-in-out infinite; margin-bottom:30px; background:linear-gradient(135deg,var(--primary),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-#pinLock h2 { font-size:24px; margin-bottom:10px; animation:rgbText 4s linear infinite; }
-#pinLock p { color:var(--text-secondary); margin-bottom:30px; }
-.pin-dots { display:flex; gap:15px; margin-bottom:30px; }
-.pin-dot { width:18px; height:18px; border-radius:50%; border:2px solid var(--primary); transition:var(--transition); }
-.pin-dot.filled { background:var(--primary); box-shadow:0 0 15px var(--primary); }
-.pin-dot.error { border-color:var(--danger); background:var(--danger); animation:pulse 0.3s ease 3; }
-.pin-pad { display:grid; grid-template-columns:repeat(3,80px); gap:15px; }
-.pin-btn { width:80px; height:80px; border-radius:50%; border:2px solid var(--border); background:var(--bg-card); color:var(--text-primary); font-size:24px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; }
-.pin-btn:active { background:var(--primary); border-color:var(--primary); transform:scale(0.9); }
-.pin-btn.empty { border-color:transparent; background:transparent; cursor:default; }
-.pin-btn.delete { font-size:18px; color:var(--danger); }
 
 /* ==================== تخطيط التطبيق ==================== */
-#app { display:none; max-width:480px; margin:0 auto; min-height:100vh; position:relative; }
+#app { display:block; max-width:480px; margin:0 auto; min-height:100vh; position:relative; }
 .app-header {
     position:sticky; top:0; z-index:100; background:rgba(10,10,26,0.95); backdrop-filter:blur(20px);
     -webkit-backdrop-filter:blur(20px); padding:8px 16px; display:flex; flex-direction:column; gap:6px;
