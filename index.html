@@ -2794,6 +2794,155 @@ AlzeinSystem.onReady = function() {
     initAllModules();
     if (typeof checkPinLock === 'function') checkPinLock();
 };
+    // ============================================
+// 🔐 PIN MIGRATION FIX - إصلاح مشكلة الرمز بعد التحديث
+// ============================================
+(function fixPinCompatibility() {
+    console.log('🔍 Checking PIN compatibility...');
+    
+    // المفاتيح القديمة التي قد يكون مخزناً فيها الرمز
+    const oldKeys = [
+        'alzein_pin', 'alz_pin', 'pin_code', 'app_pin',
+        'alzein_settings', 'alz_settings', 'user_settings'
+    ];
+    
+    // دالة لجلب الرمز من أي مصدر محتمل
+    function findOldPin() {
+        // 1. البحث في المفاتيح القديمة المباشرة
+        for (const key of oldKeys) {
+            const val = localStorage.getItem(key);
+            if (val && /^\d{4}$/.test(val)) {
+                console.log('✅ Found old PIN in:', key);
+                return val;
+            }
+        }
+        
+        // 2. البحث في كائنات الإعدادات المخزنة كـ JSON
+        for (const key of oldKeys) {
+            try {
+                const obj = JSON.parse(localStorage.getItem(key) || '{}');
+                if (obj.pin && /^\d{4}$/.test(obj.pin)) {
+                    console.log('✅ Found old PIN in JSON:', key);
+                    return obj.pin;
+                }
+                if (obj.settings?.pin && /^\d{4}$/.test(obj.settings.pin)) {
+                    console.log('✅ Found old PIN in nested JSON:', key);
+                    return obj.settings.pin;
+                }
+            } catch {}
+        }
+        
+        // 3. البحث في جميع مفاتيح localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const val = localStorage.getItem(key);
+            if (val && /^\d{4}$/.test(val) && key.toLowerCase().includes('pin')) {
+                console.log('✅ Found old PIN in dynamic key:', key);
+                return val;
+            }
+        }
+        return null;
+    }
+    
+    // دالة لاستعادة الرمز القديم
+    function restorePin() {
+        const oldPin = findOldPin();
+        if (oldPin) {
+            // حفظ في الهيكل الجديد
+            try {
+                const settings = JSON.parse(localStorage.getItem('alzein_settings') || '{}');
+                settings.pin = oldPin;
+                settings.pinLock = true;
+                localStorage.setItem('alzein_settings', JSON.stringify(settings));
+                
+                // تحديث كائن db إذا كان موجوداً
+                if (typeof db !== 'undefined' && db.settings) {
+                    db.settings.pin = oldPin;
+                    db.settings.pinLock = true;
+                }
+                
+                console.log('✅ PIN restored successfully');
+                showToast?.('🔄 تم استعادة رمز الدخول القديم', 'success');
+                return true;
+            } catch (e) {
+                console.error('❌ Failed to restore PIN:', e);
+            }
+        }
+        return false;
+    }
+    
+    // تشغيل الإصلاح
+    const restored = restorePin();
+    
+    // إذا فشل الاستعادة، إضافة خيار الطوارئ
+    if (!restored) {
+        console.warn('⚠️ Could not find old PIN, adding emergency option');
+        
+        // إضافة زر الطوارئ لشاشة القفل
+        const addEmergencyOption = () => {
+            const pinLock = document.getElementById('pinLock');
+            const emergencyBtn = document.createElement('button');
+            emergencyBtn.innerHTML = '<i class="fas fa-key"></i> استعادة الوصول';
+            emergencyBtn.style.cssText = `
+                margin-top: 20px;
+                padding: 10px 20px;
+                background: transparent;
+                border: 1px solid var(--warning);
+                color: var(--warning);
+                border-radius: 8px;
+                cursor: pointer;
+                font-family: 'Tajawal', sans-serif;
+                font-size: 13px;
+            `;
+            emergencyBtn.onclick = function() {
+                if (confirm('⚠️ تحذير: سيتم إزالة قفل التطبيق لحماية بياناتك.\n\nهل تريد المتابعة؟')) {
+                    // إزالة القفل مع حفظ البيانات
+                    ['alzein_settings', 'alz_settings', 'alzein_pin', 'alz_pin'].forEach(k => {
+                        try {
+                            const obj = JSON.parse(localStorage.getItem(k) || '{}');
+                            if (obj.pin) {
+                                obj.pin = '';
+                                obj.pinLock = false;
+                                localStorage.setItem(k, JSON.stringify(obj));
+                            }
+                        } catch {}
+                        if (k.includes('pin')) localStorage.removeItem(k);
+                    });
+                    
+                    // إزالة القفل من الواجهة
+                    if (typeof db !== 'undefined') {
+                        db.settings.pin = '';
+                        db.settings.pinLock = false;
+                        db.sync?.();
+                    }
+                    
+                    document.getElementById('pinLock').style.display = 'none';
+                    document.getElementById('app')?.style.setProperty('display', 'block');
+                    
+                    showToast?.('🔓 تم إزالة القفل، يرجى إعادة تعيينه من الإعدادات', 'warning');
+                    
+                    // إعادة توجيه للإعدادات
+                    setTimeout(() => {
+                        if (typeof navigateTo === 'function') navigateTo('settings');
+                    }, 2000);
+                }
+            };
+            
+            const pinMessage = document.getElementById('pinMessage');
+            if (pinMessage && !document.getElementById('emergencyBtn')) {
+                emergencyBtn.id = 'emergencyBtn';
+                pinMessage.parentNode.appendChild(emergencyBtn);
+            }
+        };
+        
+        // تنفيذ بعد تحميل الصفحة
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', addEmergencyOption);
+        } else {
+            addEmergencyOption();
+        }
+    }
+})();
 
 // تشغيل عند تحميل الصفحة
 if (document.readyState === 'loading') {
