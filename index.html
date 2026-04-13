@@ -12,6 +12,29 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#6C63FF">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2845/2845892.png">
+/* تصميم نافذة التفعيل الاحترافية */
+.activation-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 10, 26, 0.9); backdrop-filter: blur(15px);
+    z-index: 20000; display: flex; align-items: center; justify-content: center;
+    padding: 20px; animation: fadeIn 0.4s ease;
+}
+.activation-box {
+    background: #1a1a3e; border: 2px solid #6C63FF;
+    border-radius: 24px; padding: 30px 20px; width: 100%; max-width: 360px;
+    text-align: center; box-shadow: 0 0 40px rgba(108,99,255,0.4);
+    animation: slideUp 0.4s ease;
+}
+.activation-box i { font-size: 50px; color: #00D2FF; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+.activation-box h3 { font-size: 22px; color: white; margin-bottom: 10px; }
+.activation-box p { color: #a0a0c0; font-size: 14px; margin-bottom: 20px; }
+.activation-box .user-id-tag { background: rgba(108,99,255,0.2); padding: 5px 15px; border-radius: 10px; color: #00D2FF; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+.activation-box input {
+    width: 100%; padding: 15px; background: #12122a; border: 1px solid #2a2a5a;
+    border-radius: 12px; color: white; text-align: center; font-size: 16px;
+    margin-bottom: 20px; transition: 0.3s;
+}
+.activation-box input:focus { border-color: #00D2FF; outline: none; box-shadow: 0 0 15px rgba(0,210,255,0.2); }    
   <style>
       .user-card {
     background: linear-gradient(135deg, #6C63FF, #5A52D5);
@@ -1933,32 +1956,66 @@ document.addEventListener('DOMContentLoaded', () => { checkPinLock(); });
     },
     updateUI: function() {
         const id = this.getUserId();
-        document.getElementById('user-id-display').innerText = id;
+        if(document.getElementById('user-id-display')) document.getElementById('user-id-display').innerText = id;
         const expiry = localStorage.getItem('alz_exp');
         const status = document.getElementById('subscription-status');
         
         if (expiry && new Date(expiry) > new Date()) {
-            status.innerText = "✅ اشتراك فعال لغاية: " + new Date(expiry).toLocaleDateString('ar-EG');
-            status.style.color = "#00FF7F";
+            if(status) {
+                status.innerText = "✅ اشتراك فعال لغاية: " + new Date(expiry).toLocaleDateString('ar-EG');
+                status.style.color = "#00FF7F";
+            }
         } else {
-            status.innerText = "⚠️ الحساب غير نشط - اطلب التفعيل";
-            status.style.color = "#FF453A";
-            setTimeout(() => this.askActivation(id), 2500);
+            if(status) {
+                status.innerText = "⚠️ الحساب غير نشط - اطلب التفعيل";
+                status.style.color = "#FF453A";
+            }
+            setTimeout(() => this.askActivation(id), 2000);
         }
     },
     askActivation: function(id) {
-        const key = prompt("انسخ رقمك وأرسله للمدير للتفعيل:\n" + id + "\n\nأدخل كود التفعيل هنا:");
-        if (key === "ALZEIN-2026") { // هذا هو الكود الذي ستعطيه للعملاء
+        // حذف أي نسخة قديمة من النافذة إذا كانت موجودة
+        const oldModal = document.getElementById('customActiveModal');
+        if(oldModal) oldModal.remove();
+
+        const modalHtml = `
+            <div id="customActiveModal" class="activation-overlay">
+                <div class="activation-box">
+                    <i class="fas fa-shield-halved"></i>
+                    <h3>تفعيل تطبيق Alzein</h3>
+                    <p>يرجى إرسال الرمز التالي للمدير لتفعيل اشتراكك:</p>
+                    <div class="user-id-tag">${id}</div>
+                    <input type="text" id="activationKeyInput" placeholder="أدخل كود التفعيل هنا" inputmode="text">
+                    <button class="btn btn-primary ripple" onclick="AlzeinSystem.checkKey()">تفعيل الآن</button>
+                    <p style="margin-top:15px; font-size:12px; opacity:0.6;">تواصل معنا لتجديد اشتراكك السنوي</p>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+    checkKey: function() {
+        const key = document.getElementById('activationKeyInput').value.trim();
+        if (key === "ALZEIN-2026") {
             let d = new Date(); d.setDate(d.getDate() + 365);
             localStorage.setItem('alz_exp', d.toISOString());
-            alert("تم التفعيل بنجاح!");
+            alert("✅ تم التفعيل بنجاح! سيتم إعادة تحميل التطبيق.");
             location.reload();
-        } else if (key) {
-            alert("الكود غير صحيح!");
+        } else {
+            alert("❌ الكود غير صحيح، يرجى المحاولة مرة أخرى.");
         }
     }
-}
+};
+
+// تشغيل النظام
 AlzeinSystem.updateUI();
+
+// كود التحديث التلقائي
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+    });
+}
+
     // كود إجبار التطبيق على التحديث عند وجود تغييرات في GitHub
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
