@@ -1043,7 +1043,6 @@ function openAddContactModal(){
     document.getElementById('contactAvatarPreview').innerHTML='<i class="fas fa-camera"></i>'; 
     tempContactPhoto=null; 
     openModal('contactModal'); 
-}
 
 function editContact(id){ 
     const x=db.contacts.find(c=>c.id===id); 
@@ -2121,46 +2120,45 @@ function renderCurrencyRatesEditor() {
     `).join('');
 }
 
-// ✅ 2. دالة التحكم بالأزرار (update)
+// ✅ 2. دالة التحكم في الأزرار (+ و -)
 function updateRateManual(code, change) {
     const display = document.getElementById(`display-rate-${code}`);
     if (!display) return;
 
     let currentRate = parseFloat(display.textContent);
     let newRate = currentRate + change;
+    
     if (newRate < 0) newRate = 0;
     
-    // تنسيق ذكي
+    // تنسيق خاص: السورية رقم صحيح، البقية كسور
     newRate = (code === 'SYP') ? Math.round(newRate) : parseFloat(newRate.toFixed(2));
     
-    // تحديث الشاشة
     display.textContent = newRate;
     
-    // تحديث الـ DB وحفظها
     if(!db.settings.currencyRates) db.settings.currencyRates = {};
     db.settings.currencyRates[code] = newRate;
-    db.sync(); 
+    
+    db.sync(); // حفظ التغييرات
+    if(navigator.vibrate) navigator.vibrate(10);
+}    
+
+function openCurrencyRatesSettings() { 
+    renderCurrencyRatesEditor(); // بناء البطاقات فوراً
+    openCurrencySettings(); 
 }
 
-// ✅ 3. تعديل دالة الفتح (التي استفسرت عنها سابقاً)
-function openCurrencyRatesSettings() { 
-    renderCurrencyRatesEditor(); // بناء البطاقات أولاً
-    openCurrencySettings(); // ثم فتح النافذة
-}
-}
-    // 1. رقم الإصدار الحالي
+// ✅ 3. نظام تحديث التطبيق
 const CURRENT_APP_VERSION = "1.0.5"; 
 
-// 2. دالة الفحص
 function checkAppUpdate() {
     const savedVersion = localStorage.getItem('alzein_app_version');
     if (savedVersion && savedVersion !== CURRENT_APP_VERSION) {
         setTimeout(() => {
             const el = document.getElementById('update-notification');
             if (el) {
-                el.style.display = 'block'; // ✅ إظهار العنصر أولاً
+                el.style.display = 'block'; // إظهار العنصر
                 setTimeout(() => {
-                    el.style.bottom = "30px"; // ✅ ثم تحريكه للأعلى
+                    el.style.bottom = "30px"; // تحريكه للأعلى
                 }, 100);
             }
         }, 3000);
@@ -2169,16 +2167,17 @@ function checkAppUpdate() {
     }
 }
 
-// 3. دالة تنفيذ التحديث
 function applyAppUpdate() {
     localStorage.setItem('alzein_app_version', CURRENT_APP_VERSION);
     window.location.reload(true); // إعادة تحميل إجبارية
 }
 
-// 4. استدعاء الفحص عند التشغيل
+// تشغيل الفحص عند تحميل الصفحة
 checkAppUpdate();
+
 </script>
-    <div class="modal-overlay" id="currencyModal">
+
+<div class="modal-overlay" id="currencyModal">
     <div class="modal">
         <div class="modal-handle"></div>
         <div class="modal-header">
@@ -2189,32 +2188,31 @@ checkAppUpdate();
             <div class="form-group">
                 <label class="form-label">العملة الافتراضية</label>
                 <select class="form-select" id="defaultCurrency">
-                    <option value="USD">🇺🇸 دولار أمريكي (USD)</option>
-                    <option value="SYP">🇸🇾 ليرة سورية (SYP)</option>
-                    <option value="TRY">🇹🇷 ليرة تركية (TRY)</option>
-                    <option value="EUR">🇪🇺 يورو (EUR)</option>
-                    <option value="SAR">🇸🇦 ريال سعودي (SAR)</option>
-                    <option value="EGP">🇪🇬 جنيه مصري (EGP)</option>
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="SYP">🇸🇾 SYP</option>
+                    <option value="TRY">🇹🇷 TRY</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="SAR">🇸🇦 SAR</option>
+                    <option value="EGP">🇪🇬 EGP</option>
                 </select>
             </div>
-
             <div style="margin-top:16px; border-top:1px solid var(--border); padding-top:12px">
                 <label class="form-label">أسعار الصرف (مقابل 1 USD)</label>
                 <div id="currencyRatesEditor"></div>
             </div>
-
-            <button class="btn btn-primary ripple" onclick="saveDefaultCurrency()" style="margin-top: 15px;">
-                <i class="fas fa-save"></i> حفظ الإعدادات
-            </button>
+            <button class="btn btn-primary ripple" onclick="saveDefaultCurrency()" style="margin-top: 15px;"><i class="fas fa-save"></i> حفظ</button>
         </div>
     </div>
 </div>
-  <div id="update-notification" style="position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 2px solid var(--primary); padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 999999; width: 90%; max-width: 350px; text-align: center; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: none;"> <div style="background: var(--primary); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: -40px auto 10px; border: 4px solid var(--bg-primary);">
+
+<div id="update-notification" style="position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 2px solid var(--primary); padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 999999; width: 90%; max-width: 350px; text-align: center; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: none;"> 
+    <div style="background: var(--primary); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: -40px auto 10px; border: 4px solid var(--bg-primary);">
         <i class="fas fa-sync-alt" style="color: white; font-size: 20px;"></i>
     </div>
-    <h4 style="color: var(--text-primary); margin-bottom: 5px;">تحديث جديد متاح!</h4>
+    <h4>تحديث جديد متاح!</h4>
     <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px;">تم إطلاق تحسينات جديدة لتطبيق Alzein.</p>
-    <button class="btn btn-primary ripple" onclick="applyAppUpdate()" style="width: 100%; font-weight: bold;">تحميل التحديث الآن</button>
+    <button class="btn btn-primary ripple" onclick="applyAppUpdate()" style="width: 100%; font-weight: bold;">تحديث الآن</button>
 </div>
+
 </body>
 </html>
