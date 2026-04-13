@@ -1257,9 +1257,57 @@
             <button class="btn btn-primary ripple" onclick="saveNewPin()"><i class="fas fa-save"></i> حفظ</button>
         </div>
     </div>
+    <div class="form-group">
+    <label class="form-label">اسم النشاط التجاري (يظهر في التقارير)</label>
+    <input type="text" id="business-name-input" class="form-input" placeholder="مثلاً: صرافة الإيمان">
+    <button onclick="saveBusinessName()" class="btn btn-primary ripple" style="margin-top:10px;">حفظ الاسم</button>
 </div>
 
 <script>
+    function exportToPDF(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const businessName = getBusinessName();
+
+    // جعل اسم المحل هو العنوان الرئيسي للتقرير
+    doc.setFontSize(22);
+    doc.text(businessName, 105, 20, { align: 'center' }); 
+    
+    doc.setFontSize(12);
+    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, 10, 30);
+    
+    // ... إكمال رسم الجدول
+    doc.save(`${businessName}_Report.pdf`);
+}
+    function sendWhatsApp(accountName, balance) {
+    const businessName = getBusinessName(); // جلب الاسم المخصص
+    const message = `السلام عليكم، كشف حساب السيد: ${accountName}\nالرصيد الحالي: ${balance}\n\nشكراً لتعاملكم مع: ${businessName}`;
+    
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
+    // دالة حفظ الاسم
+function saveBusinessName() {
+    const name = document.getElementById('business-name-input').value.trim();
+    if (name) {
+        localStorage.setItem('alz_business_name', name);
+        showToast("✅ تم تحديث اسم النشاط بنجاح", "success");
+        // تحديث الاسم في الواجهة فوراً
+        updateHeaderName();
+    }
+}
+
+// دالة لجلب الاسم (إذا كان فارغاً نستخدم Alzein كافتراضي)
+function getBusinessName() {
+    return localStorage.getItem('alz_business_name') || 'Alzein System';
+}
+
+function updateHeaderName() {
+    const name = getBusinessName();
+    if(document.getElementById('app-title')) {
+        document.getElementById('app-title').innerText = name;
+    }
+}
 // ===== DATABASE MANAGER =====
 class Database {
     constructor() {
