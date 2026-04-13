@@ -1,4 +1,4 @@
-const cacheName = 'alzein-v1.8'; // ارفع الرقم دائماً عند التعديل
+const cacheName = 'alzein-v2'; // ارفع الرقم دائماً عند التعديل
 const assets = [
   './',
   './index.html'
