@@ -1959,6 +1959,13 @@ document.addEventListener('DOMContentLoaded', () => { checkPinLock(); });
     }
 }
 AlzeinSystem.updateUI();
+    // كود إجبار التطبيق على التحديث عند وجود تغييرات في GitHub
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // إعادة تحميل الصفحة تلقائياً عند اكتشاف تحديث في ملف sw.js
+        window.location.reload();
+    });
+}
 </script>
 </body>
 </html>
