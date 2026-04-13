@@ -1,4 +1,4 @@
-const cacheName = 'alzein-v1';
+const cacheName = 'alzein-v1.1';
 const assets = ['./', './index.html'];
 
 self.addEventListener('install', e => {
