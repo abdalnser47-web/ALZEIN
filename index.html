@@ -681,7 +681,19 @@
 </style>
 </head>
 <body>
+    
+<!-- الشعار التجاري -->
+    <div class="form-group logo-section">
+    <label class="form-label">الشعار التجاري (يظهر في التقارير)</label>
+    
+    <div class="logo-preview-container">
+        <img id="current-logo-preview" src="assets/default-logo.png" alt="الشعار">
+    </div>
 
+    <input type="file" id="logo-file-input" class="form-input" accept="image/*" style="display:none;">
+    <button onclick="document.getElementById('logo-file-input').click()" class="btn btn-secondary">اختيار ملف</button>
+    <button onclick="clearLogo()" class="btn btn-outline" style="margin-right:10px;">حذف</button>
+</div>
 <!-- PIN LOCK SCREEN -->
 <div id="pinLock">
     <div class="lock-icon"><i class="fas fa-lock"></i></div>
@@ -2063,6 +2075,7 @@ document.addEventListener('DOMContentLoaded', () => { checkPinLock(); });
     }
 };
 
+    
 // تشغيل النظام
 AlzeinSystem.updateUI();
 
@@ -2082,6 +2095,70 @@ if ('serviceWorker' in navigator) {
             });
         });
     });
+}
+// دالة لجلب الشعار أو الشعار الافتراضي
+function getBusinessLogo() {
+    return localStorage.getItem('alz_business_logo') || 'assets/default-logo.png';
+}
+
+// دالة لتحديث عرض الشعار في واجهة الإعدادات
+function updateLogoPreview() {
+    const logoUrl = getBusinessLogo();
+    if(document.getElementById('current-logo-preview')) {
+        document.getElementById('current-logo-preview').src = logoUrl;
+    }
+}
+
+// التعامل مع اختيار ملف جديد
+const logoInput = document.getElementById('logo-file-input');
+if(logoInput) {
+    logoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // حفظ الصورة بصيغة Base64
+                localStorage.setItem('alz_business_logo', e.target.result);
+                updateLogoPreview();
+                showToast("✅ تم تحديث الشعار بنجاح", "success");
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// دالة لحذف الشعار والعودة للافتراضي
+function clearLogo() {
+    localStorage.removeItem('alz_business_logo');
+    updateLogoPreview();
+    showToast("🧹 تم حذف الشعار العودة للافتراضي", "info");
+}
+
+// تشغيل الدالة فور فتح التطبيق
+updateLogoPreview();
+function exportToPDF(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const businessName = getBusinessName();
+    const businessLogo = getBusinessLogo(); // جلب الشعار المخصص (Base64)
+
+    // إضافة الشعار في الزاوية العلوية اليمنى (x, y, w, h)
+    try {
+        doc.addImage(businessLogo, 'PNG', 170, 10, 30, 30);
+    } catch (e) {
+        console.error("فشل إضافة الشعار للتقرير: " + e);
+    }
+
+    // اسم المحل بجانب الشعار
+    doc.setFontSize(22);
+    doc.text(businessName, 165, 25, { align: 'right' }); 
+    
+    // تاريخ التقرير
+    doc.setFontSize(10);
+    doc.text(`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`, 10, 20);
+    
+    // ... إكمال رسم الجدول
+    doc.save(`${businessName}_Report.pdf`);
 }
 </script>
 </body>
