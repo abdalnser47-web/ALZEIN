@@ -1,4 +1,4 @@
-const cacheName = 'alzein-v1.5'; // غير الرقم مع كل تحديث
+const cacheName = 'alzein-v1.7'; // غير الرقم مع كل تحديث
 const assets = ['./', './index.html'];
 
 self.addEventListener('install', (e) => {
